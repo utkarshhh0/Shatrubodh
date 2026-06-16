@@ -3,10 +3,8 @@ import pandas as pd
 import os
 import sys
 
-from src.data_generator import generate_mock_data
-from src.anomaly_detector import AnomalyDetector
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from data_generator import generate_mock_data
+from anomaly_detector import AnomalyDetector
 
 st.set_page_config(page_title="Shatrubodh", layout="wide",
                    initial_sidebar_state="expanded")

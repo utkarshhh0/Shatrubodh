@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import MinMaxScaler
-from src.utils import create_preprocessor, prepare_data_for_model
+from utils import create_preprocessor, prepare_data_for_model
 
 
 class AnomalyDetector:
