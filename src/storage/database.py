@@ -90,6 +90,19 @@ def initialize_database(db_path: str = DEFAULT_DB_PATH):
     cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_user_date ON behavior_profiles(user_id, profile_date);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_profiles_role_dept ON behavior_profiles(role, department);")
     
+    # 5. Create Anomaly Scores Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS anomaly_scores (
+            profile_id TEXT PRIMARY KEY,
+            if_score REAL NOT NULL,
+            lof_score REAL NOT NULL,
+            combined_score REAL NOT NULL,
+            is_anomaly INTEGER NOT NULL,
+            FOREIGN KEY (profile_id) REFERENCES behavior_profiles(profile_id)
+        );
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_scores_combined ON anomaly_scores(combined_score);")
+    
     conn.commit()
     conn.close()
     print(f"Database initialized successfully at: {db_path}")
@@ -193,6 +206,34 @@ def insert_behavior_profiles(df: pd.DataFrame, db_path: str = DEFAULT_DB_PATH):
     
     # Convert dataframe rows to list of tuples
     tuples = list(df.itertuples(index=False, name=None))
+    
+    cursor.executemany(query, tuples)
+    conn.commit()
+    conn.close()
+
+
+def insert_anomaly_scores(df: pd.DataFrame, db_path: str = DEFAULT_DB_PATH):
+    """
+    Bulk inserts combined anomaly scores into the anomaly_scores table.
+    Uses INSERT OR REPLACE to update stats during re-runs.
+    """
+    if df.empty:
+        return
+        
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+    
+    cursor.execute("PRAGMA synchronous = OFF;")
+    cursor.execute("PRAGMA journal_mode = WAL;")
+    
+    query = """
+        INSERT OR REPLACE INTO anomaly_scores (
+            profile_id, if_score, lof_score, combined_score, is_anomaly
+        ) VALUES (?, ?, ?, ?, ?);
+    """
+    
+    # Convert select dataframe columns to list of tuples
+    tuples = list(df[['profile_id', 'if_score', 'lof_score', 'combined_score', 'is_anomaly']].itertuples(index=False, name=None))
     
     cursor.executemany(query, tuples)
     conn.commit()

@@ -23,3 +23,18 @@ Dependencies Added: None (pandas, sqlite3, os, sys)
 Known Issues: None
 Next Recommended Step: Design the Analytics layer (Isolation Forest & Local Outlier Factor) to process behavior_profiles records.
 
+Date/Time: 2026-06-21 19:40 (IST)
+Files Modified: src/analytics/anomaly_detector.py, src/storage/database.py, DEVELOPMENT_LOG.md
+Reason: Implement Phase 5 Analytics layer to detect behavioral anomalies from user daily profiles (DRDO Requirement 3).
+Changes Implemented:
+  - Configured database schema for `anomaly_scores` table and composite indexes in `database.py`.
+  - Upgraded `anomaly_detector.py` to ingest user day profiles from `behavior_profiles` SQLite table.
+  - Implemented `IsolationForest` (contamination=0.02, random_state=42) trained on 14 raw numeric features.
+  - Implemented `LocalOutlierFactor` (novelty=True, n_neighbors=20) trained on scaled numeric features (StandardScaler applied).
+  - Designed combined score generation: raw IF/LOF scores are inverted (high value = anomalous), normalized [0, 1] using MinMaxScaler, combined 50/50, and scaled [0, 100].
+  - Set binary `is_anomaly` flag based on the 98th percentile combined score threshold from the training set.
+  - Modified the pipeline entry point to run database table initialization, train model parameters, score all profile days, and insert scores into SQLite.
+Dependencies Added: None (scikit-learn, joblib)
+Known Issues: None
+Next Recommended Step: Ready for production use of analytics engine and integration with visual dashboard layer.
+
