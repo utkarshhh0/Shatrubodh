@@ -3,6 +3,7 @@
 import os
 import sys
 import sqlite3
+import pandas as pd
 
 # Ensure the parent 'src' directory is in PYTHONPATH for clean relative imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -56,10 +57,38 @@ def initialize_database(db_path: str = DEFAULT_DB_PATH):
         );
     """)
     
-    # 3. Create Performance Optimizing Indexes
+    # 3. Create Behavior Profiles Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS behavior_profiles (
+            profile_id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            profile_date TEXT NOT NULL,
+            department TEXT NOT NULL,
+            role TEXT NOT NULL,
+            logon_count INTEGER NOT NULL,
+            logoff_count INTEGER NOT NULL,
+            after_hours_logins INTEGER NOT NULL,
+            usb_insertions INTEGER NOT NULL,
+            file_write_count INTEGER NOT NULL,
+            file_copy_to_usb INTEGER NOT NULL,
+            file_delete_count INTEGER NOT NULL,
+            emails_sent INTEGER NOT NULL,
+            attachments_sent INTEGER NOT NULL,
+            email_exfil_bytes INTEGER NOT NULL,
+            unique_pcs INTEGER NOT NULL,
+            total_events INTEGER NOT NULL,
+            first_activity_hour REAL NOT NULL,
+            last_activity_hour REAL NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (user_id)
+        );
+    """)
+    
+    # 4. Create Performance Optimizing Indexes
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_events_user_id ON events(user_id);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_events_event_type ON events(event_type);")
+    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_user_date ON behavior_profiles(user_id, profile_date);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_profiles_role_dept ON behavior_profiles(role, department);")
     
     conn.commit()
     conn.close()
@@ -134,6 +163,38 @@ def insert_events(events: list, db_path: str = DEFAULT_DB_PATH):
         ))
         
     cursor.executemany(query, event_tuples)
+    conn.commit()
+    conn.close()
+
+
+def insert_behavior_profiles(df: pd.DataFrame, db_path: str = DEFAULT_DB_PATH):
+    """
+    Bulk inserts behavioral profiles into the behavior_profiles table.
+    Uses INSERT OR REPLACE to update stats during re-runs.
+    """
+    if df.empty:
+        return
+        
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+    
+    cursor.execute("PRAGMA synchronous = OFF;")
+    cursor.execute("PRAGMA journal_mode = WAL;")
+    
+    query = """
+        INSERT OR REPLACE INTO behavior_profiles (
+            profile_id, user_id, profile_date, department, role,
+            logon_count, logoff_count, after_hours_logins, usb_insertions,
+            file_write_count, file_copy_to_usb, file_delete_count,
+            emails_sent, attachments_sent, email_exfil_bytes, unique_pcs, total_events,
+            first_activity_hour, last_activity_hour
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    """
+    
+    # Convert dataframe rows to list of tuples
+    tuples = list(df.itertuples(index=False, name=None))
+    
+    cursor.executemany(query, tuples)
     conn.commit()
     conn.close()
 
