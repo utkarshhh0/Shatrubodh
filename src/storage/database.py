@@ -103,6 +103,21 @@ def initialize_database(db_path: str = DEFAULT_DB_PATH):
     """)
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_scores_combined ON anomaly_scores(combined_score);")
     
+    # 6. Create Risk Scores Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS risk_scores (
+            profile_id TEXT PRIMARY KEY,
+            raw_anomaly_score REAL NOT NULL,
+            context_multiplier REAL NOT NULL,
+            risk_score REAL NOT NULL,
+            risk_band TEXT NOT NULL,
+            risk_reasons TEXT NOT NULL,
+            FOREIGN KEY (profile_id) REFERENCES behavior_profiles(profile_id)
+        );
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_risk_scores_value ON risk_scores(risk_score);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_risk_scores_band ON risk_scores(risk_band);")
+    
     conn.commit()
     conn.close()
     print(f"Database initialized successfully at: {db_path}")
@@ -234,6 +249,34 @@ def insert_anomaly_scores(df: pd.DataFrame, db_path: str = DEFAULT_DB_PATH):
     
     # Convert select dataframe columns to list of tuples
     tuples = list(df[['profile_id', 'if_score', 'lof_score', 'combined_score', 'is_anomaly']].itertuples(index=False, name=None))
+    
+    cursor.executemany(query, tuples)
+    conn.commit()
+    conn.close()
+
+
+def insert_risk_scores(df: pd.DataFrame, db_path: str = DEFAULT_DB_PATH):
+    """
+    Bulk inserts combined risk scores into the risk_scores table.
+    Uses INSERT OR REPLACE to update stats during re-runs.
+    """
+    if df.empty:
+        return
+        
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+    
+    cursor.execute("PRAGMA synchronous = OFF;")
+    cursor.execute("PRAGMA journal_mode = WAL;")
+    
+    query = """
+        INSERT OR REPLACE INTO risk_scores (
+            profile_id, raw_anomaly_score, context_multiplier, risk_score, risk_band, risk_reasons
+        ) VALUES (?, ?, ?, ?, ?, ?);
+    """
+    
+    # Convert select dataframe columns to list of tuples
+    tuples = list(df[['profile_id', 'raw_anomaly_score', 'context_multiplier', 'risk_score', 'risk_band', 'risk_reasons']].itertuples(index=False, name=None))
     
     cursor.executemany(query, tuples)
     conn.commit()

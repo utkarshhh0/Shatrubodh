@@ -38,3 +38,17 @@ Dependencies Added: None (scikit-learn, joblib)
 Known Issues: None
 Next Recommended Step: Ready for production use of analytics engine and integration with visual dashboard layer.
 
+Date/Time: 2026-06-21 20:35 (IST)
+Files Modified: src/storage/database.py, DEVELOPMENT_LOG.md (Created: src/analytics/risk_engine.py)
+Reason: Implement Phase 6 Risk Engine layer to map statistical anomalies into human-interpretable risk scores and bands (DRDO Module 3 integration).
+Changes Implemented:
+  - Added `risk_scores` table schema, index definitions, and `insert_risk_scores` bulk transactional writer to `database.py`.
+  - Created `risk_engine.py` to ingest anomaly scores and behavior profile context via SQLite.
+  - Implemented vectorized math calculation of Context Multiplier (M) using weighted severity bounds (0.40 USB copy, 0.35 email data exfil, 0.25 after-hours shift logins) and 50MB email threshold cap.
+  - Designed final Risk Score mapping using the headroom-scaling formula ($R = S_{raw} + (100 - S_{raw}) * (M - 1.0)$) to prevent ceiling truncation/excessive clipping near 100.
+  - Coded vectorized condition banding ('Low', 'Medium', 'High', 'Critical') and generated verbose human-readable reasons explaining driver statistics.
+  - Implemented command line entry point to automate scoring and database insertion for all 472,744 behavior profiles.
+Dependencies Added: None (pandas, numpy, sqlite3, os, sys)
+Known Issues: None
+Next Recommended Step: Establish the Alert Generation layer to query critical risk profiles from SQLite database.
+
