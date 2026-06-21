@@ -118,6 +118,27 @@ def initialize_database(db_path: str = DEFAULT_DB_PATH):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_risk_scores_value ON risk_scores(risk_score);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_risk_scores_band ON risk_scores(risk_band);")
     
+    # 7. Create Alerts Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS alerts (
+            alert_id TEXT PRIMARY KEY,
+            profile_id TEXT UNIQUE NOT NULL,
+            user_id TEXT NOT NULL,
+            alert_date TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            severity TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'New',
+            assigned_to TEXT,
+            reasons TEXT NOT NULL,
+            evidence_json TEXT NOT NULL,
+            analyst_notes TEXT,
+            FOREIGN KEY (profile_id) REFERENCES risk_scores(profile_id),
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        );
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_alerts_status_severity ON alerts(status, severity);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_alerts_user_date ON alerts(user_id, alert_date);")
+    
     conn.commit()
     conn.close()
     print(f"Database initialized successfully at: {db_path}")
@@ -277,6 +298,38 @@ def insert_risk_scores(df: pd.DataFrame, db_path: str = DEFAULT_DB_PATH):
     
     # Convert select dataframe columns to list of tuples
     tuples = list(df[['profile_id', 'raw_anomaly_score', 'context_multiplier', 'risk_score', 'risk_band', 'risk_reasons']].itertuples(index=False, name=None))
+    
+    cursor.executemany(query, tuples)
+    conn.commit()
+    conn.close()
+
+
+def insert_alerts(df: pd.DataFrame, db_path: str = DEFAULT_DB_PATH):
+    """
+    Bulk inserts alerts into the alerts table.
+    Uses INSERT OR IGNORE since duplicate prevention is key (UNIQUE profile_id constraint).
+    """
+    if df.empty:
+        return
+        
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+    
+    cursor.execute("PRAGMA synchronous = OFF;")
+    cursor.execute("PRAGMA journal_mode = WAL;")
+    
+    query = """
+        INSERT OR IGNORE INTO alerts (
+            alert_id, profile_id, user_id, alert_date, created_at,
+            severity, status, assigned_to, reasons, evidence_json, analyst_notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    """
+    
+    # Convert select dataframe columns to list of tuples
+    tuples = list(df[[
+        'alert_id', 'profile_id', 'user_id', 'alert_date', 'created_at',
+        'severity', 'status', 'assigned_to', 'reasons', 'evidence_json', 'analyst_notes'
+    ]].itertuples(index=False, name=None))
     
     cursor.executemany(query, tuples)
     conn.commit()
