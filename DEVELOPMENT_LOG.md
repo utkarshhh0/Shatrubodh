@@ -66,3 +66,25 @@ Dependencies Added: None (pandas, numpy, sqlite3, os, sys, uuid, datetime, json)
 Known Issues: None
 Next Recommended Step: Pipeline ready for Streamlit dashboard integration and analyst operational workflows.
 
+Date/Time: 2026-07-01 00:40 (IST)
+Files Modified: DEVELOPMENT_LOG.md
+Reason: Document completion of Phase 8.1 - Operational SOC Dashboard Integration.
+Changes Implemented:
+  - Documented completion of Phase 8.1.
+  - Objective: Integrate the operational Streamlit SOC dashboard with the existing UEBA backend pipeline while preserving the original Shatrubodh visual identity.
+  - Completed Components:
+    * Dashboard tab: Alert triage queue, severity/status filtering, user search, alert investigation panel, analyst feedback workflow, and alert status updates.
+    * Threat Hunter tab: User identity lookup, alert history retrieval, user rolling baseline comparison, department-role cohort comparison, risk timeline visualization, and historical activity exploration.
+    * Reports tab: Department threat density analysis, role anomaly distributions, and CSV export functionality.
+  - Backend integrations reused: db_service.py, evidence_parser.py.
+  - Major engineering decisions:
+    * Rolled back to stable Phase 7 backend after dashboard redesign failure.
+    * Rebuilt dashboard incrementally while preserving original visual design language.
+    * Adopted rolling 30-record user baselines.
+    * Adopted 90-day department-role cohort baselines.
+    * Performed statistical aggregation in Python rather than SQLite.
+  - Validation status: Dashboard startup (PASS), Database integration (PASS), Alert workflow (PASS), Threat hunter workflow (PASS), Reporting workflow (PASS).
+  - Git milestone: Commit ffac270, Tag v0.8.1.
+Dependencies Added: None
+Known Issues: None
+Next Recommended Step: Proceed to Phase 9: Validation, Verification, Vulnerability Assessment, and Code Hardening.
