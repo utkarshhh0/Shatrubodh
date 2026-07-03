@@ -137,3 +137,22 @@ F. Decision
 Dependencies Added: None
 Known Issues: LOF small-sample failure condition, wildcard search sorting lag.
 Next Recommended Step: Proceed to Phase 10: Hardening Implementation.
+
+Date/Time: 2026-07-04 05:15 (IST)
+Files Modified: src/analytics/anomaly_detector.py, DEVELOPMENT_LOG.md
+Reason: Phase 10.1 - LOF Small-Sample Hardening
+Changes Implemented:
+  - Implemented dynamic n_neighbors sizing in train_on_profiles based on sample count.
+  - Implemented Isolation Forest-only fallback behavior when sample count is less than 5, skipping LOF training and scoring.
+  - Modified predict_profiles to run fallback logic when lof_model is None.
+  - Modified model load conditions to avoid redundant loading checks when running in fallback mode.
+Validation Performed:
+  - Created synthetic data sizes N=1, N=2, N=3, N=5, N=10, N=20 and ran anomaly detection training and predictions.
+  - Performed python -m py_compile compilation checks.
+  - Checked dynamic imports on system python.
+Results:
+  - N < 5 cases correctly bypassed LOF and completed using Isolation Forest only.
+  - N >= 5 cases trained LOF using effective_neighbors = min(20, sample_count - 1).
+  - All test sizes compiled and executed without warnings or exceptions.
+Known Issues: Wildcard search sorting lag remains.
+Next Recommended Step: Proceed to Phase 10.2: SQLite Connection and Lock Hardening.

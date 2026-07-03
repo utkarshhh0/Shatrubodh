@@ -44,31 +44,45 @@ class AnomalyDetector:
             raise ValueError("Dataframe is empty. Cannot train model.")
             
         X_raw = df[FEATURE_COLUMNS].values
+        sample_count = len(df)
         
         # 1. Train Isolation Forest (scale-invariant, operates on raw features)
         self.if_model = IsolationForest(n_estimators=100, contamination=0.02, random_state=42, n_jobs=-1)
         self.if_model.fit(X_raw)
         if_raw_scores = self.if_model.decision_function(X_raw)
         
-        # 2. Preprocess and scale features strictly for distance-sensitive Local Outlier Factor
-        self.lof_scaler = StandardScaler()
-        X_scaled = self.lof_scaler.fit_transform(X_raw)
-        
-        # Train Local Outlier Factor
-        self.lof_model = LocalOutlierFactor(n_neighbors=20, novelty=True, n_jobs=-1)
-        self.lof_model.fit(X_scaled)
-        lof_raw_scores = self.lof_model.score_samples(X_scaled)
-        
-        # 3. Fit score normalizers (MinMaxScaler). We invert the raw scores during 
-        # fitting so that higher values (closer to 1.0) represent greater abnormality.
         self.if_score_scaler = MinMaxScaler(feature_range=(0, 1))
         if_norm = self.if_score_scaler.fit_transform((-if_raw_scores).reshape(-1, 1)).flatten()
         
-        self.lof_score_scaler = MinMaxScaler(feature_range=(0, 1))
-        lof_norm = self.lof_score_scaler.fit_transform((-lof_raw_scores).reshape(-1, 1)).flatten()
-        
-        # 4. Compute combined score (50% IF + 50% LOF) and map to 0-100 scale
-        combined_norm_scores = 0.5 * if_norm + 0.5 * lof_norm
+        if sample_count < 5:
+            print(f"Skipping LocalOutlierFactor training: sample count ({sample_count}) is less than 5. Falling back to Isolation Forest only.")
+            self.lof_model = None
+            self.lof_scaler = None
+            self.lof_score_scaler = None
+            
+            # 4. Compute combined score (100% IF) and map to 0-100 scale
+            combined_norm_scores = if_norm
+        else:
+            # 2. Preprocess and scale features strictly for distance-sensitive Local Outlier Factor
+            self.lof_scaler = StandardScaler()
+            X_scaled = self.lof_scaler.fit_transform(X_raw)
+            
+            # Train Local Outlier Factor with dynamic effective neighbors
+            effective_neighbors = min(20, sample_count - 1)
+            effective_neighbors = max(effective_neighbors, 2)
+            
+            self.lof_model = LocalOutlierFactor(n_neighbors=effective_neighbors, novelty=True, n_jobs=-1)
+            self.lof_model.fit(X_scaled)
+            lof_raw_scores = self.lof_model.score_samples(X_scaled)
+            
+            # 3. Fit score normalizers (MinMaxScaler). We invert the raw scores during 
+            # fitting so that higher values (closer to 1.0) represent greater abnormality.
+            self.lof_score_scaler = MinMaxScaler(feature_range=(0, 1))
+            lof_norm = self.lof_score_scaler.fit_transform((-lof_raw_scores).reshape(-1, 1)).flatten()
+            
+            # 4. Compute combined score (50% IF + 50% LOF) and map to 0-100 scale
+            combined_norm_scores = 0.5 * if_norm + 0.5 * lof_norm
+            
         combined_risk_scores = combined_norm_scores * 100.0
         
         # Set threshold at the 98th percentile to strictly enforce 2% outlier contamination
@@ -106,9 +120,7 @@ class AnomalyDetector:
         Returns a DataFrame matching the anomaly_scores schema:
         profile_id, if_score, lof_score, combined_score, is_anomaly
         """
-        if (self.if_model is None or self.lof_model is None or
-            self.lof_scaler is None or self.if_score_scaler is None or
-            self.lof_score_scaler is None):
+        if self.if_model is None:
             self.load_models()
             
         X_raw = df[FEATURE_COLUMNS].values
@@ -119,13 +131,17 @@ class AnomalyDetector:
         if_norm = np.clip(if_norm, 0, 1)  # Bound checks
         
         # 2. Local Outlier Factor scores (StandardScaler applied beforehand)
-        X_scaled = self.lof_scaler.transform(X_raw)
-        lof_raw = self.lof_model.score_samples(X_scaled)
-        lof_norm = self.lof_score_scaler.transform((-lof_raw).reshape(-1, 1)).flatten()
-        lof_norm = np.clip(lof_norm, 0, 1)
-        
-        # 3. Combined score mapped to 0-100 range
-        combined_norm = 0.5 * if_norm + 0.5 * lof_norm
+        if self.lof_model is None:
+            lof_norm = if_norm
+            combined_norm = if_norm
+        else:
+            X_scaled = self.lof_scaler.transform(X_raw)
+            lof_raw = self.lof_model.score_samples(X_scaled)
+            lof_norm = self.lof_score_scaler.transform((-lof_raw).reshape(-1, 1)).flatten()
+            lof_norm = np.clip(lof_norm, 0, 1)
+            # Combined score mapped to 0-100 range
+            combined_norm = 0.5 * if_norm + 0.5 * lof_norm
+            
         combined_risk = combined_norm * 100.0
         
         # 4. Check against the 98th percentile contamination boundary
