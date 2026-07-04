@@ -77,10 +77,15 @@ def render_alert_queue():
         
     # 4. Display Alert Table
     try:
+        # Validation / Invariant check
+        assert isinstance(df_alerts, pd.DataFrame), "df_alerts must be a DataFrame"
+        required_cols = ['alert_id', 'user_id', 'alert_date', 'severity', 'status', 'risk_score', 'assigned_to']
+        missing_cols = [col for col in required_cols if col not in df_alerts.columns]
+        if missing_cols:
+            raise ValueError(f"Alerts DataFrame is missing required columns: {missing_cols}")
+
         # Clean display columns
-        display_df = df_alerts[[
-            'alert_id', 'user_id', 'alert_date', 'severity', 'status', 'risk_score', 'assigned_to'
-        ]].copy()
+        display_df = df_alerts[required_cols].copy()
         display_df.columns = ['Alert ID', 'User ID', 'Alert Date', 'Severity', 'Status', 'Risk Score', 'Assigned To']
         
         st.dataframe(display_df, use_container_width=True, hide_index=True)
@@ -124,6 +129,11 @@ def render_alert_detail_panel(alert_data: dict, alert_id: str):
     """
     Renders detail panel and action form for a selected alert.
     """
+    if alert_data is None or not isinstance(alert_data, dict):
+        raise TypeError("alert_data must be a dictionary")
+    if not isinstance(alert_id, str) or not alert_id:
+        raise ValueError("alert_id must be a non-empty string")
+
     col1, col2 = st.columns([2, 1])
     
     with col1:

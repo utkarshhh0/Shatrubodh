@@ -94,6 +94,18 @@ class AlertGenerator:
         ]
         df['evidence_json'] = df[cols_to_serialize].apply(lambda r: json.dumps(r.to_dict()), axis=1)
         
+        # Validation checks on generated alerts
+        if not (df['alert_id'].str.match(r'^alt_[a-f0-9]{12}$') & (df['alert_id'].notnull())).all():
+            raise ValueError("alert_id must match alt_<12-hex>")
+        if not set(df['severity'].unique()).issubset({'Medium', 'High', 'Critical'}):
+            raise ValueError("severity must be Medium, High, or Critical")
+        if not set(df['status'].unique()).issubset({'New', 'In_Progress', 'Resolved', 'False_Positive'}):
+            raise ValueError("status must be valid")
+        if not df['profile_id'].notnull().all():
+            raise ValueError("profile_id cannot be null")
+        if not (df['user_id'].notnull() & (df['user_id'] != '')).all():
+            raise ValueError("user_id cannot be null or empty")
+
         # Return fields aligned with the alerts table schema
         return df[[
             'alert_id', 'profile_id', 'user_id', 'alert_date', 'created_at',

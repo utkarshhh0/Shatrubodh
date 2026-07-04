@@ -27,6 +27,13 @@ def render_reports():
         
     if not df_dept.empty:
         try:
+            # Invariant check
+            assert isinstance(df_dept, pd.DataFrame), "df_dept must be a DataFrame"
+            required_cols = ['department', 'alert_count', 'critical_count', 'high_count', 'medium_count']
+            missing_cols = [col for col in required_cols if col not in df_dept.columns]
+            if missing_cols:
+                raise ValueError(f"Department DataFrame missing columns: {missing_cols}")
+
             # Plot distribution using simple native chart
             plot_department_distribution(df_dept)
             
@@ -58,6 +65,13 @@ def render_reports():
         
     if not df_role.empty:
         try:
+            # Invariant check
+            assert isinstance(df_role, pd.DataFrame), "df_role must be a DataFrame"
+            required_cols = ['role', 'alert_count']
+            missing_cols = [col for col in required_cols if col not in df_role.columns]
+            if missing_cols:
+                raise ValueError(f"Role DataFrame missing columns: {missing_cols}")
+
             role_table = df_role.rename(columns={
                 'role': 'Employee Role',
                 'alert_count': 'Alert Count'

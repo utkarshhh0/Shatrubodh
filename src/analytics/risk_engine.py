@@ -40,6 +40,11 @@ class RiskEngine:
         if df.empty:
             raise ValueError("No anomaly scores found in the database. Run anomaly detector first.")
 
+        required_cols = ['profile_id', 'raw_anomaly_score', 'is_anomaly', 'file_copy_to_usb', 'email_exfil_bytes', 'after_hours_logins']
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Loaded dataframe is missing columns: {missing_cols}")
+
         # Vectorized calculations of scaled multipliers
         # f(usb) = min(file_copy_to_usb / 5.0, 1.0)
         f_usb = np.minimum(df['file_copy_to_usb'] / 5.0, 1.0)
@@ -67,6 +72,14 @@ class RiskEngine:
         choices = ['Low', 'Medium', 'High', 'Critical']
         df['risk_band'] = np.select(conditions, choices, default='Low')
         
+        # Validation checks:
+        if not df['context_multiplier'].between(1.0, 2.0).all():
+            raise ValueError("context_multiplier must lie in [1.0, 2.0]")
+        if not df['risk_score'].between(0.0, 100.0).all():
+            raise ValueError("risk_score must lie in [0.0, 100.0]")
+        if not set(df['risk_band'].unique()).issubset({'Low', 'Medium', 'High', 'Critical'}):
+            raise ValueError("risk_band must contain values in Low, Medium, High, Critical")
+
         # Generate human-readable reasons row-by-row for rich strings
         def generate_reasons(row):
             reasons = []

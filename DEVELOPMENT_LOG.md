@@ -194,4 +194,87 @@ Results:
   - System components compiled and imported successfully.
   - Errors are caught and presented via st.error/st.exception while keeping the primary dashboard container alive (Graceful Degradation verified).
 Known Issues: None.
-Next Recommended Step: Proceed to Phase 11.
+Next Recommended Step: Proceed to Phase 10.4: Defensive Assertions & Input Validation Hardening.
+
+Date/Time: 2026-07-04 21:10 (IST)
+Files Modified: src/dashboard/services/db_service.py, src/dashboard/services/evidence_parser.py, src/dashboard/pages/alert_queue.py, src/dashboard/pages/threat_hunter.py, src/dashboard/pages/reports.py, src/dashboard/components/charts.py, src/analytics/anomaly_detector.py, src/analytics/risk_engine.py, src/analytics/alert_generator.py, DEVELOPMENT_LOG.md
+Reason: Phase 10.4 - Defensive Assertions & Input Validation Hardening
+Changes Implemented:
+  - Enforced input validations on db_service.py query parameters (status_filters, severity_filters, user_id_search, start_date, end_date, limit, offset) to verify types and date formats.
+  - Implemented parameter checks in update_alert_status, get_user_demographics, get_user_rolling_history, and get_cohort_population_history to guard against None values and empty identifiers.
+  - Added assertions/invariants checks to AnomalyDetector train/predict scopes to guarantee feature columns numerical types, profile_id presence, and risk score scaling.
+  - Hardened RiskEngine and AlertGenerator by adding DataFrame shape validations and assertions checking that context_multiplier is in [1.0, 2.0], risk_score is in [0.0, 100.0], risk_band is subset of {'Low', 'Medium', 'High', 'Critical'}, and severity/status are valid.
+  - Integrated schema assertions inside native charts.py components (plot_risk_timeline, plot_metric_comparison, plot_department_distribution) ensuring required columns exist and risk score inputs are bounded.
+  - Enforced DataFrame type checks and column coverage validations inside alert_queue.py and reports.py dashboards to guarantee robust display.
+Validation Performed:
+  - Compiled all modified files using py_compile (Exit code: 0).
+  - Executed mock unit tests asserting validation checks for None inputs, empty strings, invalid dates, invalid JSON, empty dataframes, missing columns, invalid user/alert IDs, and malformed status/severity parameters.
+Results:
+  - All unit tests verified successfully. Custom validators raise ValueError/TypeError and invariants assert correctly.
+Known Issues: None.
+Next Recommended Step: Proceed to Phase 10.4.1: Assertion Rationalization & Production Hardening.
+
+Date/Time: 2026-07-04 21:28 (IST)
+Files Modified: src/analytics/anomaly_detector.py, src/analytics/risk_engine.py, src/analytics/alert_generator.py, src/dashboard/components/charts.py, DEVELOPMENT_LOG.md
+Reason: Phase 10.4.1 — Assertion Rationalization & Production Hardening
+Changes Implemented:
+  - Inspected and rationalized assertions introduced in Phase 10.4.
+  - Retained true programmer invariants (returned object types and schema structure validations in evidence_parser.py) as assertions.
+  - Replaced production-unsafe assertions (risk_score bounds, risk_band checks, context_multiplier values, alert_id regex, severity/status enums, and chart inputs) with explicit TypeError/ValueError exceptions.
+Validation Performed:
+  - Ran py_compile on all modified files.
+  - Verified dynamic module imports.
+  - Ran mock unit tests simulating invalid risk scores, invalid risk bands, malformed alert IDs, and empty profile_ids to confirm correct ValueError exception raising.
+Results:
+  - All test files compiled and executed successfully.
+  - Unsafe assertions replaced with production-ready validation checks.
+Known Issues: None.
+Next Recommended Step: Proceed to Phase 10.4 Finalization.
+
+=========================================================
+PHASE 10.4 — Defensive Validation & Assertion Rationalization
+=========================================================
+
+Date/Time: 2026-07-04 21:40 (IST)
+Files Modified:
+- src/analytics/anomaly_detector.py
+- src/analytics/risk_engine.py
+- src/analytics/alert_generator.py
+- src/dashboard/components/charts.py
+- src/dashboard/pages/alert_queue.py
+- src/dashboard/pages/reports.py
+- src/dashboard/pages/threat_hunter.py
+- src/dashboard/services/db_service.py
+- src/dashboard/services/evidence_parser.py
+- DEVELOPMENT_LOG.md
+Reason: Phase 10.4 / 10.4.1 - Production Hardening, Defensive Input Validations, & Assertion Rationalization
+
+Changes Implemented:
+- Added defensive input validation.
+- Added runtime integrity checks.
+- Replaced production-unsafe assertions with explicit exceptions.
+- Preserved programmer invariants as assertions.
+- Hardened dashboard component validation.
+
+Validation Performed:
+- py_compile verification
+- import verification
+- invalid dataframe tests
+- malformed alert tests
+- malformed risk score tests
+- malformed status/severity tests
+
+Results:
+- PASS
+
+Business Logic Verification:
+- anomaly detection unchanged
+- risk engine unchanged
+- alert generation unchanged
+- dashboard unchanged
+
+Known Issues:
+- None
+
+Next Recommended Step:
+- Proceed to Phase 10.5 Repository & Environment Hardening

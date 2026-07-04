@@ -16,6 +16,9 @@ def get_user_alerts(user_id: str) -> pd.DataFrame:
     """
     Queries all alerts associated with a specific user.
     """
+    if not isinstance(user_id, str) or not user_id:
+        raise ValueError("user_id must be a non-empty string")
+        
     try:
         conn = get_connection()
         try:
@@ -38,6 +41,9 @@ def get_user_behavior_history(user_id: str) -> pd.DataFrame:
     """
     Queries recent behavior profiles for a user.
     """
+    if not isinstance(user_id, str) or not user_id:
+        raise ValueError("user_id must be a non-empty string")
+
     try:
         conn = get_connection()
         try:
@@ -140,6 +146,15 @@ def render_investigation_view(user_id: str, demographics: dict, alert_data: dict
     """
     Renders the full forensic analysis of the selected alert context.
     """
+    if not isinstance(user_id, str) or not user_id:
+        raise ValueError("user_id must be a non-empty string")
+    if not isinstance(demographics, dict):
+        raise TypeError("demographics must be a dictionary")
+    if not isinstance(alert_data, dict):
+        raise TypeError("alert_data must be a dictionary")
+    if not isinstance(alert_id, str) or not alert_id:
+        raise ValueError("alert_id must be a non-empty string")
+
     alert_date = alert_data.get('alert_date')
     dept = demographics.get('department')
     role = demographics.get('role')

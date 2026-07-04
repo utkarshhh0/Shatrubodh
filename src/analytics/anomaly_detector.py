@@ -40,9 +40,21 @@ class AnomalyDetector:
         Trains Isolation Forest (on raw numeric features) and Local Outlier Factor (on scaled numeric features).
         Calculates score normalization bounds and the 98th percentile anomaly threshold.
         """
+        if df is None:
+            raise TypeError("Input df cannot be None")
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError("Input df must be a pandas DataFrame")
         if df.empty:
             raise ValueError("Dataframe is empty. Cannot train model.")
             
+        missing_cols = [col for col in FEATURE_COLUMNS if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Input DataFrame is missing required features: {missing_cols}")
+            
+        for col in FEATURE_COLUMNS:
+            if not pd.api.types.is_numeric_dtype(df[col]):
+                raise TypeError(f"Column '{col}' must be numeric")
+                
         X_raw = df[FEATURE_COLUMNS].values
         sample_count = len(df)
         
@@ -120,6 +132,19 @@ class AnomalyDetector:
         Returns a DataFrame matching the anomaly_scores schema:
         profile_id, if_score, lof_score, combined_score, is_anomaly
         """
+        if df is None:
+            raise TypeError("Input df cannot be None")
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError("Input df must be a pandas DataFrame")
+        if 'profile_id' not in df.columns:
+            raise ValueError("Input DataFrame must contain 'profile_id' column")
+        missing_cols = [col for col in FEATURE_COLUMNS if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Input DataFrame is missing required features: {missing_cols}")
+        for col in FEATURE_COLUMNS:
+            if not pd.api.types.is_numeric_dtype(df[col]):
+                raise TypeError(f"Column '{col}' must be numeric")
+                
         if self.if_model is None:
             self.load_models()
             
@@ -154,6 +179,13 @@ class AnomalyDetector:
             'combined_score': combined_risk,
             'is_anomaly': is_anomaly
         })
+        
+        # Validation checks:
+        if not results['combined_score'].between(0.0, 100.0).all():
+            raise ValueError("Combined scores must lie in [0, 100]")
+        if not set(results['is_anomaly'].unique()).issubset({0, 1}):
+            raise ValueError("is_anomaly must contain values only in {0, 1}")
+        
         return results
 
     # Compatibility wrappers for legacy / original interfaces

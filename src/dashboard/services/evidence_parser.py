@@ -49,6 +49,13 @@ def compute_comparisons(
     Computes absolute, percentage difference, and Z-score for the 12 core metrics.
     Handles zero std-dev bounds and flags insufficient data.
     """
+    if alert_evidence is not None and not isinstance(alert_evidence, dict):
+        raise TypeError("alert_evidence must be a dictionary")
+    if user_history_rows is not None and not isinstance(user_history_rows, (list, tuple)):
+        raise TypeError("user_history_rows must be a list or tuple")
+    if cohort_history_rows is not None and not isinstance(cohort_history_rows, (list, tuple)):
+        raise TypeError("cohort_history_rows must be a list or tuple")
+
     try:
         comparison_data = []
         
@@ -130,7 +137,15 @@ def compute_comparisons(
                 'Cohort Dev (%)': c_z_str if c_z_str in ["First Occurrence", "Critical Deviation"] else c_pct_str
             })
             
-        return pd.DataFrame(comparison_data)
+        results = pd.DataFrame(comparison_data)
+        
+        # Assertions/Invariants:
+        assert isinstance(results, pd.DataFrame), "Returned object must be a DataFrame"
+        if not results.empty:
+            expected_cols = ['Metric', 'Alert Value', 'User Mean', 'User Dev (Z)', 'User Dev (%)', 'Cohort Mean', 'Cohort Dev (Z)', 'Cohort Dev (%)']
+            assert all(col in results.columns for col in expected_cols), "Deviation comparison DataFrame missing required columns"
+            
+        return results
     except Exception as e:
         import sys
         print(f"Error computing comparisons: {e}", file=sys.stderr)

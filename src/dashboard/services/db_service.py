@@ -63,6 +63,45 @@ def get_alert_queue(
     Retrieves a paginated list of alerts filtered by user settings.
     No caching applied to allow dynamic lifecycle triaging.
     """
+    import re
+    date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+    
+    if status_filters is not None:
+        if not isinstance(status_filters, (list, tuple)):
+            raise TypeError("status_filters must be a list or tuple")
+        valid_statuses = {'New', 'In_Progress', 'Resolved', 'False_Positive'}
+        for s in status_filters:
+            if s not in valid_statuses:
+                raise ValueError(f"Invalid status filter value: {s}")
+
+    if severity_filters is not None:
+        if not isinstance(severity_filters, (list, tuple)):
+            raise TypeError("severity_filters must be a list or tuple")
+        valid_severities = {'Medium', 'High', 'Critical'}
+        for s in severity_filters:
+            if s not in valid_severities:
+                raise ValueError(f"Invalid severity filter value: {s}")
+
+    if not isinstance(user_id_search, str):
+        raise TypeError("user_id_search must be a string")
+
+    if start_date is not None:
+        if not isinstance(start_date, str):
+            raise TypeError("start_date must be a string")
+        if not date_pattern.match(start_date):
+            raise ValueError("start_date must be in YYYY-MM-DD format")
+
+    if end_date is not None:
+        if not isinstance(end_date, str):
+            raise TypeError("end_date must be a string")
+        if not date_pattern.match(end_date):
+            raise ValueError("end_date must be in YYYY-MM-DD format")
+
+    if not isinstance(limit, int) or limit < 0:
+        raise TypeError("limit must be a non-negative integer")
+    if not isinstance(offset, int) or offset < 0:
+        raise TypeError("offset must be a non-negative integer")
+
     conn = get_connection(db_path)
     try:
         conditions = ["1=1"]
@@ -140,6 +179,15 @@ def update_alert_status(
     """
     Executes raw SQL update transaction to persist operational status changes.
     """
+    if not isinstance(alert_id, str) or not alert_id:
+        raise ValueError("alert_id must be a non-empty string")
+    if status not in {'New', 'In_Progress', 'Resolved', 'False_Positive'}:
+        raise ValueError(f"Invalid status value: {status}")
+    if assigned_to is not None and not isinstance(assigned_to, str):
+        raise TypeError("assigned_to must be None or a string")
+    if analyst_notes is not None and not isinstance(analyst_notes, str):
+        raise TypeError("analyst_notes must be None or a string")
+
     conn = get_connection(db_path)
     cursor = None
     try:
@@ -164,6 +212,9 @@ def get_user_demographics(user_id: str, db_path: str = DEFAULT_DB_PATH) -> dict:
     Retrieves user profile demographics context from users table.
     Cached for 1 hour.
     """
+    if not isinstance(user_id, str) or not user_id:
+        raise ValueError("user_id must be a non-empty string")
+
     conn = get_connection(db_path)
     cursor = None
     try:
@@ -190,6 +241,13 @@ def get_user_rolling_history(user_id: str, alert_date: str, db_path: str = DEFAU
     Fetches the 30 most recent behavioral records for a user prior to the alert date.
     Cached for 10 minutes (keyed by user_id and alert_date).
     """
+    import re
+    date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+    if not isinstance(user_id, str) or not user_id:
+        raise ValueError("user_id must be a non-empty string")
+    if not isinstance(alert_date, str) or not date_pattern.match(alert_date):
+        raise ValueError("alert_date must be in YYYY-MM-DD format")
+
     conn = get_connection(db_path)
     cursor = None
     try:
@@ -218,6 +276,15 @@ def get_cohort_population_history(department: str, role: str, alert_date: str, d
     Fetches peer group cohort profiles (same role/dept) in a 90-day window.
     Cached for 10 minutes (keyed by department, role, and alert_date).
     """
+    import re
+    date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+    if not isinstance(department, str) or not department:
+        raise ValueError("department must be a non-empty string")
+    if not isinstance(role, str) or not role:
+        raise ValueError("role must be a non-empty string")
+    if not isinstance(alert_date, str) or not date_pattern.match(alert_date):
+        raise ValueError("alert_date must be in YYYY-MM-DD format")
+
     conn = get_connection(db_path)
     cursor = None
     try:
@@ -288,6 +355,9 @@ def get_user_risk_timeline(user_id: str, db_path: str = DEFAULT_DB_PATH) -> pd.D
     """
     Queries risk scores over time for a specific user to render trend lines.
     """
+    if not isinstance(user_id, str) or not user_id:
+        raise ValueError("user_id must be a non-empty string")
+
     conn = get_connection(db_path)
     try:
         query = """
@@ -308,6 +378,9 @@ def get_user_alerts_dates(user_id: str, db_path: str = DEFAULT_DB_PATH) -> list:
     """
     Retrieves all dates where the user triggered an alert.
     """
+    if not isinstance(user_id, str) or not user_id:
+        raise ValueError("user_id must be a non-empty string")
+
     conn = get_connection(db_path)
     cursor = None
     try:
@@ -324,6 +397,13 @@ def get_alert_by_user_date(user_id: str, alert_date: str, db_path: str = DEFAULT
     """
     Retrieves a single alert record for a user on a specific date.
     """
+    import re
+    date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+    if not isinstance(user_id, str) or not user_id:
+        raise ValueError("user_id must be a non-empty string")
+    if not isinstance(alert_date, str) or not date_pattern.match(alert_date):
+        raise ValueError("alert_date must be in YYYY-MM-DD format")
+
     conn = get_connection(db_path)
     cursor = None
     try:
