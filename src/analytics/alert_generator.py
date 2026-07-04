@@ -23,39 +23,40 @@ class AlertGenerator:
         Constructs the alert records with complete behavioral profile JSON evidence.
         """
         conn = get_connection(self.db_path)
-        
-        # Pull risk scores and behavior profiles that are not yet alerted
-        query = """
-            SELECT 
-                r.profile_id, 
-                r.risk_score, 
-                r.risk_reasons as reasons,
-                b.user_id,
-                b.profile_date as alert_date,
-                b.profile_date,
-                b.department,
-                b.role,
-                b.logon_count,
-                b.logoff_count,
-                b.after_hours_logins,
-                b.usb_insertions,
-                b.file_write_count,
-                b.file_copy_to_usb,
-                b.file_delete_count,
-                b.emails_sent,
-                b.attachments_sent,
-                b.email_exfil_bytes,
-                b.unique_pcs,
-                b.total_events,
-                b.first_activity_hour,
-                b.last_activity_hour
-            FROM risk_scores r
-            JOIN behavior_profiles b ON r.profile_id = b.profile_id
-            LEFT JOIN alerts a ON r.profile_id = a.profile_id
-            WHERE r.risk_score >= 50.0 AND a.profile_id IS NULL
-        """
-        df = pd.read_sql_query(query, conn)
-        conn.close()
+        try:
+            # Pull risk scores and behavior profiles that are not yet alerted
+            query = """
+                SELECT 
+                    r.profile_id, 
+                    r.risk_score, 
+                    r.risk_reasons as reasons,
+                    b.user_id,
+                    b.profile_date as alert_date,
+                    b.profile_date,
+                    b.department,
+                    b.role,
+                    b.logon_count,
+                    b.logoff_count,
+                    b.after_hours_logins,
+                    b.usb_insertions,
+                    b.file_write_count,
+                    b.file_copy_to_usb,
+                    b.file_delete_count,
+                    b.emails_sent,
+                    b.attachments_sent,
+                    b.email_exfil_bytes,
+                    b.unique_pcs,
+                    b.total_events,
+                    b.first_activity_hour,
+                    b.last_activity_hour
+                FROM risk_scores r
+                JOIN behavior_profiles b ON r.profile_id = b.profile_id
+                LEFT JOIN alerts a ON r.profile_id = a.profile_id
+                WHERE r.risk_score >= 50.0 AND a.profile_id IS NULL
+            """
+            df = pd.read_sql_query(query, conn)
+        finally:
+            conn.close()
         
         if df.empty:
             print("No new risk profiles qualify for alert generation (risk_score >= 50.0 and not already alerted).")

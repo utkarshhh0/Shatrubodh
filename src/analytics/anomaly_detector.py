@@ -178,8 +178,10 @@ def run_analytics_pipeline(db_path: str = DEFAULT_DB_PATH):
     
     # 2. Load behavior profiles from SQLite
     conn = get_connection(db_path)
-    df = pd.read_sql_query("SELECT * FROM behavior_profiles", conn)
-    conn.close()
+    try:
+        df = pd.read_sql_query("SELECT * FROM behavior_profiles", conn)
+    finally:
+        conn.close()
     
     if df.empty:
         raise ValueError("No behavioral profiles found in the database. Run feature engineering first.")

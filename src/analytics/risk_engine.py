@@ -20,21 +20,22 @@ class RiskEngine:
         computes the final risk scores, assigns risk bands, and generates explanations.
         """
         conn = get_connection(self.db_path)
-        
-        # Load unified features and anomaly scores
-        query = """
-            SELECT 
-                a.profile_id, 
-                a.combined_score as raw_anomaly_score, 
-                a.is_anomaly,
-                b.file_copy_to_usb,
-                b.email_exfil_bytes,
-                b.after_hours_logins
-            FROM anomaly_scores a
-            JOIN behavior_profiles b ON a.profile_id = b.profile_id
-        """
-        df = pd.read_sql_query(query, conn)
-        conn.close()
+        try:
+            # Load unified features and anomaly scores
+            query = """
+                SELECT 
+                    a.profile_id, 
+                    a.combined_score as raw_anomaly_score, 
+                    a.is_anomaly,
+                    b.file_copy_to_usb,
+                    b.email_exfil_bytes,
+                    b.after_hours_logins
+                FROM anomaly_scores a
+                JOIN behavior_profiles b ON a.profile_id = b.profile_id
+            """
+            df = pd.read_sql_query(query, conn)
+        finally:
+            conn.close()
         
         if df.empty:
             raise ValueError("No anomaly scores found in the database. Run anomaly detector first.")
