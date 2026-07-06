@@ -15,3 +15,25 @@ sample_data.csv
 # Shatrubodh Local Data
 src/dataset/
 *.db
+
+# Hardening ignores (Phase 10.5)
+*.pyc
+*.pyo
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+.env
+.env.*
+*.pem
+*.key
+*.crt
+secrets.*
+credentials.*
+apikeys.*
+model.pkl
+DEVELOPMENT_LOG.md
+
+# Old Version Code Files (Legacy)
+src/legacy/
