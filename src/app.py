@@ -61,6 +61,7 @@ def render_footer():
         ---
         <p style="text-align: center; color: grey;">
             <strong>Shatrubodh: Insider Threat Intelligence Platform</strong> |
+            v0.10.5 |
             &copy; 2026 Utkarsh Gupta |
             <a href="https://github.com/utkarshhh0/Shatrubodh" style="color: grey;">Help</a>
         </p>
