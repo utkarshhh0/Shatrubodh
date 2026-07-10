@@ -110,7 +110,7 @@ Shatrubodh/
 ├── docs/
 │   ├── architecture.md
 │   ├── dependencies.md
-│   └── project_report.txt
+│   └── project_report.md
 ├── src/
 │   ├── analytics/
 │   ├── collectors/
@@ -137,7 +137,7 @@ For reproducibility, the project uses the same publicly available Kaggle mirror 
 
 https://www.kaggle.com/datasets/mrajaxnp/cert-insider-threat-detection-research/
 
-All preprocessing, normalization, feature engineering, and behavioral profile generation performed by Shatrubodh are documented in **docs/project_report.txt**.
+The complete implementation, engineering decisions, data pipeline, machine learning workflow, validation, and production hardening are documented in **docs/project_report.md**.
 
 ---
 
@@ -168,9 +168,36 @@ streamlit run src/app.py
 
 Project documentation is available under the `docs/` directory:
 
-- **architecture.md** — System architecture and module interactions.
-- **project_report.txt** — Detailed engineering report.
-- **dependencies.md** — Dependency inventory, versions, and installation command.
+- **architecture.md** — High-level system architecture and module interactions.
+- **project_report.md** — Comprehensive technical report covering design, implementation, machine learning pipeline, validation, and engineering decisions.
+- **dependencies.md** — Project dependencies, versions, and installation instructions.
+
+---
+
+## Technical Report
+
+A comprehensive engineering report is included in:
+
+```text
+docs/project_report.md
+```
+
+The report documents the complete design and development of Shatrubodh, including:
+
+- Problem statement and objectives
+- System architecture
+- Dataset selection and preprocessing
+- Data collection and normalization
+- Feature engineering and behavioral profiling
+- Anomaly detection and machine learning
+- Contextual risk assessment and alert generation
+- Security Operations Center (SOC) dashboard
+- Validation, verification, and production hardening
+- Performance evaluation
+- Engineering decisions and design rationale
+- Limitations and future work
+
+It serves as the primary technical reference for understanding the platform's architecture, implementation, and engineering methodology.
 
 ---
 
