@@ -1,8 +1,6 @@
 # Project Report
 
----
-
-# Table of Contents
+## Table of Contents
 
 - [Abstract](#abstract)
 - [1. Introduction](#1-introduction)
@@ -193,8 +191,6 @@ Current collectors include:
 
 The separation of collectors from downstream processing enables additional enterprise log sources to be integrated without requiring modifications to the analytics pipeline.
 
----
-
 ## 5.2 Event Normalization Layer
 
 Security events originating from different systems frequently contain inconsistent field names, timestamp formats, and metadata structures. The normalization layer converts heterogeneous inputs into a unified internal schema suitable for downstream processing.
@@ -208,8 +204,6 @@ Primary responsibilities include:
 - Event validation
 
 The resulting canonical event structure allows all downstream analytical components to operate independently of the original data source.
-
----
 
 ## 5.3 Storage Layer
 
@@ -235,8 +229,6 @@ The database contains six operational tables:
 
 Strategically placed indexes improve query performance for dashboard rendering, filtering, and analyst investigations while SQLite's Write-Ahead Logging (WAL) mode provides reliable transactional behavior.
 
----
-
 ## 5.4 Feature Engineering Layer
 
 Raw security events are transformed into behavioral profiles representing daily user activity.
@@ -244,8 +236,6 @@ Raw security events are transformed into behavioral profiles representing daily 
 Instead of analysing individual events directly, the system aggregates security telemetry into fourteen behavioral metrics describing authentication patterns, endpoint activity, removable media usage, email behavior, workstation diversity, and temporal activity boundaries.
 
 Behavioral aggregation significantly reduces data dimensionality while preserving meaningful indicators required for anomaly detection.
-
----
 
 ## 5.5 Analytics Layer
 
@@ -259,8 +249,6 @@ Both models operate without requiring labelled insider threat examples, making t
 
 The normalized outputs of both algorithms are combined to produce a unified anomaly score representing the statistical abnormality of each behavioral profile.
 
----
-
 ## 5.6 Contextual Risk Engine
 
 Statistical anomalies alone are insufficient to determine operational risk.
@@ -272,8 +260,6 @@ The Risk Engine enriches anomaly scores by incorporating contextual behavioral i
 - After-hours authentication activity
 
 These contextual multipliers produce an operational risk score together with a corresponding severity classification and human-readable explanation suitable for analyst interpretation.
-
----
 
 ## 5.7 Alert Generation Layer
 
@@ -290,8 +276,6 @@ Each alert preserves:
 - Analyst notes
 
 This evidence-driven design ensures that every alert remains fully traceable throughout the investigation lifecycle.
-
----
 
 ## 5.8 Security Operations Center Dashboard
 
@@ -329,8 +313,6 @@ Provides:
 - Role distributions
 - CSV export
 - Operational reporting
-
----
 
 ## 5.9 Architectural Characteristics
 
@@ -431,8 +413,6 @@ Behavioural analysis alone is insufficient without organizational context. The L
 
 This contextual information is associated with behavioural events throughout the analytical pipeline, enabling organizational reporting and peer-group comparisons.
 
----
-
 ## 7.2 Event Normalization
 
 Because each source file contains different field names, timestamp formats, and metadata structures, a normalization stage converts all collected records into a unified schema.
@@ -450,8 +430,6 @@ After normalization, every event follows a consistent internal structure regardl
 
 This abstraction significantly simplifies downstream processing because feature engineering, anomaly detection, database operations, and dashboard components no longer depend on dataset-specific formats.
 
----
-
 ## 7.3 Data Validation
 
 Before events are accepted into the analytical pipeline, multiple validation checks are performed to improve data integrity.
@@ -465,8 +443,6 @@ Validation includes:
 - User identity consistency checks
 
 Records failing validation are safely ignored or handled through defensive processing to prevent pipeline failures while preserving overall dataset integrity.
-
----
 
 ## 7.4 Context Enrichment
 
@@ -483,8 +459,6 @@ Adding organizational context enables the platform to perform:
 
 These contextual attributes also contribute to investigation workflows presented within the Threat Hunter module.
 
----
-
 ## 7.5 Database Integration
 
 Normalized and enriched events are persisted within the platform's SQLite database through the storage layer.
@@ -499,8 +473,6 @@ The storage subsystem maintains dedicated tables for:
 - Alerts
 
 Parameterized SQL queries are used throughout the platform to improve security, while indexed database tables significantly reduce dashboard query latency during investigations and reporting.
-
----
 
 ## 7.6 Engineering Considerations
 
@@ -530,8 +502,6 @@ Each generated profile serves as the analytical unit processed throughout the re
 
 The behavioural profile generation process also establishes a consistent feature space across all users, ensuring that every observation contains the same numerical representation regardless of the number or type of raw events originally collected.
 
----
-
 ## 8.2 Engineered Behavioural Features
 
 Each behavioural profile consists of fourteen engineered numerical features designed to summarize the most significant indicators of insider activity.
@@ -557,8 +527,6 @@ The generated feature vector includes:
 
 These features collectively describe authentication behaviour, workstation usage, removable media activity, file operations, communication behaviour, temporal activity, and overall operational workload.
 
----
-
 ## 8.3 Behavioural Baseline Construction
 
 Rather than comparing users against predefined security rules, Shatrubodh establishes behavioural baselines directly from historical activity.
@@ -566,8 +534,6 @@ Rather than comparing users against predefined security rules, Shatrubodh establ
 As behavioural profiles accumulate over time, the platform learns statistical representations of normal organizational behaviour. These baselines enable users to be evaluated relative to their own historical activity as well as against comparable peer groups within the organization.
 
 This behavioural modelling approach allows the system to identify gradual deviations that may remain undetected by traditional signature-based security mechanisms.
-
----
 
 ## 8.4 Advantages of Behavioural Aggregation
 
@@ -583,8 +549,6 @@ The approach:
 - Enables explainable behavioural evidence to be presented during analyst investigations.
 
 These advantages improve both analytical performance and operational interpretability.
-
----
 
 ## 8.5 Integration with the Analytics Pipeline
 
@@ -615,8 +579,6 @@ These algorithms were selected because they detect anomalies using fundamentally
 
 The combination provides greater robustness than relying on a single anomaly detection technique.
 
----
-
 ## 9.2 Isolation Forest
 
 Isolation Forest is an ensemble-based anomaly detection algorithm specifically designed to identify rare observations.
@@ -631,8 +593,6 @@ Its primary advantages include:
 - Independence from labelled training data.
 - Robust performance in high-dimensional feature spaces.
 - Linear scalability with increasing data volume.
-
----
 
 ## 9.3 Local Outlier Factor (LOF)
 
@@ -649,8 +609,6 @@ LOF is particularly effective for identifying:
 - Localized deviations among similar users.
 - Context-sensitive behavioural changes.
 
----
-
 ## 9.4 Ensemble Behavioural Analysis
 
 Rather than depending exclusively on either algorithm, Shatrubodh combines the outputs of both models into a unified anomaly assessment.
@@ -658,8 +616,6 @@ Rather than depending exclusively on either algorithm, Shatrubodh combines the o
 Each behavioural profile is independently evaluated by Isolation Forest and Local Outlier Factor. The resulting anomaly scores are normalized before being incorporated into the subsequent contextual risk assessment stage.
 
 This ensemble strategy reduces dependence on the limitations of individual algorithms while improving overall detection stability across diverse behavioural patterns.
-
----
 
 ## 9.5 Model Training
 
@@ -677,8 +633,6 @@ Once trained, the serialized models are reused during operational analysis witho
 
 This design improves reproducibility while reducing computational overhead during deployment.
 
----
-
 ## 9.6 Behavioural Inference
 
 During runtime, newly generated behavioural profiles follow the same preprocessing pipeline used during training.
@@ -686,8 +640,6 @@ During runtime, newly generated behavioural profiles follow the same preprocessi
 Each profile is evaluated independently by both anomaly detection models. The resulting statistical outputs indicate the degree to which the observed behaviour deviates from established organizational norms.
 
 These anomaly scores are intentionally treated as intermediate analytical outputs rather than final security decisions. Statistical deviation alone does not necessarily imply malicious activity and therefore requires contextual interpretation.
-
----
 
 ## 9.7 Engineering Considerations
 
@@ -728,8 +680,6 @@ Each indicator contributes to the overall assessment according to predefined ana
 
 The resulting contextual analysis produces a normalized risk score representing the likelihood that the observed behavioural pattern requires analyst attention.
 
----
-
 ## 10.2 Risk Classification
 
 To improve operational usability, numerical risk scores are translated into discrete severity levels.
@@ -743,8 +693,6 @@ Shatrubodh classifies detected behaviours into three operational categories:
 This classification enables analysts to prioritize investigations according to operational impact rather than manually interpreting numerical anomaly scores.
 
 By separating statistical modelling from operational prioritization, the platform reduces analyst workload while preserving explainability throughout the investigation process.
-
----
 
 ## 10.3 Alert Generation
 
@@ -764,8 +712,6 @@ Each generated alert contains:
 
 Rather than storing only numerical outputs, the alert preserves the behavioural evidence used during the assessment process. This enables analysts to understand why an alert was generated without requiring re-execution of the analytical pipeline.
 
----
-
 ## 10.4 Alert Lifecycle
 
 Alerts progress through a structured investigation workflow designed to support operational Security Operations Center (SOC) activities.
@@ -781,8 +727,6 @@ These states allow analysts to track investigation progress while preserving his
 
 Additional investigation metadata, including analyst assignments and investigation notes, is maintained throughout the alert lifecycle to support collaborative analysis and operational auditing.
 
----
-
 ## 10.5 Explainable Security Analytics
 
 One of the primary design goals of Shatrubodh is to ensure that generated alerts remain explainable.
@@ -796,8 +740,6 @@ Instead of presenting only anomaly scores, the platform provides supporting beha
 - Timeline-based behavioural history.
 
 This evidence-driven approach allows analysts to understand the factors contributing to each alert, improving confidence in analytical outcomes while supporting informed investigation decisions.
-
----
 
 ## 10.6 Engineering Considerations
 
@@ -821,8 +763,6 @@ The dashboard is implemented using **Streamlit**, providing an interactive web-b
 
 The dashboard is organized into three operational modules that collectively support the complete investigation lifecycle.
 
----
-
 ## 11.1 Alert Queue
 
 The Alert Queue acts as the primary operational workspace for security analysts.
@@ -839,8 +779,6 @@ Key capabilities include:
 - Alert status updates.
 
 The dashboard allows analysts to progress alerts through the defined investigation workflow while preserving a complete audit trail of investigation activities.
-
----
 
 ## 11.2 Threat Hunter
 
@@ -860,8 +798,6 @@ Available analytical views include:
 
 These capabilities allow analysts to distinguish between legitimate operational deviations and behaviours that warrant further investigation.
 
----
-
 ## 11.3 System & Reports
 
 The reporting module provides an organizational view of behavioural risk across the enterprise.
@@ -879,8 +815,6 @@ Available reports include:
 
 These reports support both operational decision-making and long-term behavioural trend analysis.
 
----
-
 ## 11.4 Dashboard Services
 
 The presentation layer communicates with backend services through dedicated service modules responsible for database access and evidence generation.
@@ -896,8 +830,6 @@ These services provide:
 
 Separating dashboard logic from database operations improves maintainability while reducing duplication across interface components.
 
----
-
 ## 11.5 Visualization Components
 
 Behavioural information is presented using interactive visualizations designed to improve analytical interpretation.
@@ -912,8 +844,6 @@ The dashboard includes graphical representations of:
 - Historical activity summaries.
 
 Visual representations allow analysts to identify behavioural trends significantly faster than manual inspection of tabular data alone.
-
----
 
 ## 11.6 Engineering Considerations
 
@@ -936,8 +866,6 @@ Developing an analytical pipeline alone is insufficient for building a reliable 
 
 The validation process focused on ensuring that each architectural layer behaved consistently under both expected and abnormal operating conditions while preserving the integrity of the behavioural analytics pipeline.
 
----
-
 ## 12.1 System Validation
 
 Validation was performed across the complete end-to-end workflow, beginning with data ingestion and concluding with analyst investigations through the SOC dashboard.
@@ -956,8 +884,6 @@ The following components were verified during system validation:
 
 Each stage was tested independently before validating the complete integrated pipeline.
 
----
-
 ## 12.2 Machine Learning Verification
 
 Special attention was given to verifying the stability and reliability of the anomaly detection pipeline.
@@ -973,8 +899,6 @@ Verification activities included:
 - Threshold verification.
 
 Edge-case testing confirmed correct operation across varying behavioural profile sizes while ensuring analytical consistency throughout the pipeline.
-
----
 
 ## 12.3 Security Verification
 
@@ -994,8 +918,6 @@ Parameterized SQL queries and layered service abstractions significantly reduced
 
 No critical implementation vulnerabilities were identified during the security review.
 
----
-
 ## 12.4 Exception Boundary Hardening
 
 Operational dashboards should remain available even when individual analytical components encounter unexpected conditions.
@@ -1013,8 +935,6 @@ Hardening included:
 
 These improvements ensure that isolated failures do not propagate throughout the application.
 
----
-
 ## 12.5 Defensive Validation
 
 Additional defensive programming techniques were incorporated to improve operational robustness.
@@ -1031,8 +951,6 @@ Implemented safeguards include:
 
 These measures reduce unexpected runtime failures while improving long-term maintainability.
 
----
-
 ## 12.6 Performance Optimization
 
 Several optimizations were introduced following validation to improve responsiveness without altering analytical behaviour.
@@ -1047,8 +965,6 @@ Optimization measures include:
 - Efficient behavioural profile retrieval.
 
 These improvements reduced investigation latency while preserving analytical correctness.
-
----
 
 ## 12.7 Repository & Environment Hardening
 
@@ -1065,8 +981,6 @@ Repository hardening included:
 - Verification that no hardcoded credentials or secrets were present within the source code.
 
 These measures improve maintainability while reducing the risk of accidentally exposing development artifacts or sensitive information.
-
----
 
 ## 12.8 Validation Summary
 
@@ -1093,8 +1007,6 @@ The performance of a User and Entity Behaviour Analytics (UEBA) platform extends
 
 Rather than evaluating isolated machine learning models, this chapter considers the operational performance of the complete platform following the validation and hardening activities described in the previous chapter.
 
----
-
 ## 13.1 End-to-End Pipeline Performance
 
 The analytical workflow consists of multiple sequential stages:
@@ -1110,8 +1022,6 @@ The analytical workflow consists of multiple sequential stages:
 Validation confirmed that each stage executes successfully while preserving data consistency throughout the pipeline.
 
 The modular separation between these stages minimizes processing dependencies and allows each component to be optimized independently without affecting the remainder of the system.
-
----
 
 ## 13.2 Database Performance
 
@@ -1130,8 +1040,6 @@ Additional optimizations include:
 
 These improvements significantly reduce database latency during analyst investigations while maintaining transactional consistency.
 
----
-
 ## 13.3 Analytics Performance
 
 The behavioural analytics pipeline was designed to operate on engineered behavioural profiles rather than individual security events.
@@ -1146,8 +1054,6 @@ This design offers several computational advantages:
 
 By aggregating security telemetry into daily behavioural profiles before machine learning inference, computational complexity is substantially reduced compared with analysing raw event streams directly.
 
----
-
 ## 13.4 Dashboard Responsiveness
 
 The Streamlit-based SOC Dashboard was optimized to provide responsive analyst interactions.
@@ -1161,8 +1067,6 @@ Performance improvements include:
 - Reduced repeated computations.
 
 These optimizations improve dashboard responsiveness during alert triage, threat hunting, and organizational reporting.
-
----
 
 ## 13.5 Scalability Considerations
 
@@ -1179,8 +1083,6 @@ The following architectural decisions improve scalability:
 
 These characteristics simplify future migration toward larger enterprise deployments without requiring significant architectural redesign.
 
----
-
 ## 13.6 Engineering Trade-offs
 
 Several engineering trade-offs were intentionally made during development.
@@ -1192,8 +1094,6 @@ Behavioural aggregation was chosen instead of event-level machine learning to im
 An unsupervised learning approach was adopted because labelled insider threat datasets are limited in real-world enterprise environments.
 
 Finally, the separation of anomaly detection from contextual risk assessment improves explainability while reducing false-positive investigations.
-
----
 
 ## 13.7 Overall Evaluation
 
@@ -1220,8 +1120,6 @@ The development of Shatrubodh was guided not only by functional requirements but
 
 This chapter discusses the major engineering decisions made throughout the development process and the rationale behind each choice.
 
----
-
 ## 14.1 Modular Layered Architecture
 
 A layered architecture was adopted to separate the platform into independent functional components including data collection, normalization, feature engineering, behavioural analytics, contextual risk assessment, alert generation, database management, and visualization.
@@ -1236,8 +1134,6 @@ This separation provides several advantages:
 
 Because each layer communicates through well-defined interfaces, modifications to one subsystem have minimal impact on the remainder of the platform.
 
----
-
 ## 14.2 Behavioural Analytics Instead of Rule-Based Detection
 
 Traditional security monitoring frequently relies on manually maintained detection rules or predefined attack signatures.
@@ -1247,8 +1143,6 @@ Shatrubodh instead focuses on behavioural modelling.
 Rather than attempting to identify known attacks, the platform establishes behavioural baselines and detects statistically significant deviations from normal user activity.
 
 This approach allows previously unseen behavioural patterns to be identified without requiring continuously updated signature databases.
-
----
 
 ## 14.3 Daily Behavioural Profiling
 
@@ -1264,8 +1158,6 @@ Daily aggregation was selected because it:
 
 This decision also simplifies analyst interpretation since investigations focus on behavioural summaries rather than thousands of individual log entries.
 
----
-
 ## 14.4 Ensemble Machine Learning
 
 No single anomaly detection algorithm performs optimally across every behavioural scenario.
@@ -1275,8 +1167,6 @@ For this reason, Shatrubodh combines Isolation Forest and Local Outlier Factor i
 Isolation Forest identifies globally anomalous behaviour while Local Outlier Factor identifies localized deviations relative to neighbouring behavioural profiles.
 
 Using both models provides a more balanced assessment than relying on either algorithm individually.
-
----
 
 ## 14.5 Separation of Analytics and Risk Assessment
 
@@ -1295,8 +1185,6 @@ This separation improves:
 
 It also allows contextual rules to evolve independently of the machine learning models.
 
----
-
 ## 14.6 Explainable Security Intelligence
 
 Many anomaly detection systems produce numerical scores without sufficient justification.
@@ -1313,8 +1201,6 @@ Analysts are provided with:
 
 This evidence-driven approach supports informed decision making rather than opaque machine learning outputs.
 
----
-
 ## 14.7 SQLite as the Operational Database
 
 SQLite was selected as the database backend after considering the objectives of the project.
@@ -1329,8 +1215,6 @@ Its advantages include:
 
 The modular storage layer also permits future migration to enterprise database systems with minimal architectural changes.
 
----
-
 ## 14.8 Service-Oriented Dashboard Design
 
 The dashboard does not directly access database objects or analytical modules.
@@ -1344,8 +1228,6 @@ Instead, dedicated service modules perform:
 - Alert retrieval.
 
 This separation reduces code duplication while improving maintainability and testability.
-
----
 
 ## 14.9 Production Hardening
 
@@ -1363,8 +1245,6 @@ Structured validation and hardening introduced:
 
 These improvements increased platform robustness without modifying analytical behaviour.
 
----
-
 ## 14.10 Extensibility
 
 The platform was intentionally designed to support future enhancements.
@@ -1381,8 +1261,6 @@ Potential extensions include:
 
 Because the analytical pipeline is modular, these capabilities can be incorporated without requiring fundamental architectural redesign.
 
----
-
 ## 14.11 Summary
 
 Every major engineering decision within Shatrubodh was made to balance analytical capability, operational usability, software maintainability, and future extensibility. Instead of developing a standalone anomaly detection model, the project evolved into a complete behavioural analytics platform that combines modular software engineering, explainable machine learning, contextual risk assessment, and analyst-centric investigation workflows. These design choices collectively establish a robust foundation for future research and enterprise-scale development.
@@ -1393,23 +1271,17 @@ Every major engineering decision within Shatrubodh was made to balance analytica
 
 While Shatrubodh successfully implements a complete User and Entity Behaviour Analytics (UEBA) pipeline, it was developed as a research-oriented platform and therefore operates within several practical constraints. These limitations are acknowledged to provide an accurate understanding of the current implementation and to identify opportunities for future enhancement.
 
----
-
 ## 15.1 Dataset Dependency
 
 The behavioural analytics pipeline was developed and evaluated using the CERT Insider Threat Dataset. Although the dataset provides realistic enterprise activity and simulated insider threat scenarios, it cannot fully capture the diversity and unpredictability of operational enterprise environments.
 
 Consequently, behavioural patterns observed within production infrastructures may differ from those represented within the research dataset.
 
----
-
 ## 15.2 Batch Processing
 
 The current implementation processes behavioural data in batches rather than continuously ingesting live enterprise events.
 
 While this approach simplifies experimentation and model evaluation, production deployments would benefit from real-time event streaming and continuous behavioural analysis to reduce detection latency.
-
----
 
 ## 15.3 Limited Data Sources
 
@@ -1426,8 +1298,6 @@ Modern enterprise security environments often generate additional telemetry from
 
 Integrating these sources would improve behavioural visibility and contextual awareness.
 
----
-
 ## 15.4 Unsupervised Learning Constraints
 
 Isolation Forest and Local Outlier Factor identify statistical deviations rather than malicious intent.
@@ -1440,15 +1310,11 @@ As a result:
 
 The contextual Risk Engine reduces this limitation but cannot eliminate it entirely.
 
----
-
 ## 15.5 Research-Scale Deployment
 
 SQLite was selected because it provides a lightweight, portable, and reliable database suitable for research, demonstration, and educational environments.
 
 Large enterprise deployments processing millions of daily events would likely require distributed database systems capable of supporting significantly higher ingestion rates and concurrent analytical workloads.
-
----
 
 ## 15.6 Static Risk Rules
 
@@ -1456,15 +1322,11 @@ The contextual Risk Engine currently applies predefined analytical rules to conv
 
 Although this provides transparency and explainability, future implementations may benefit from adaptive or self-learning risk models capable of dynamically adjusting contextual weights based on organizational behaviour.
 
----
-
 ## 15.7 Platform Scope
 
 Shatrubodh focuses specifically on insider threat detection through behavioural analytics.
 
 It is not intended to replace comprehensive enterprise security platforms such as SIEM, SOAR, Endpoint Detection and Response (EDR), or Network Detection and Response (NDR) solutions. Instead, it should be viewed as a complementary behavioural intelligence component capable of integrating with broader cybersecurity ecosystems.
-
----
 
 ## 15.8 Summary
 
@@ -1476,8 +1338,6 @@ The identified limitations primarily reflect deliberate engineering trade-offs m
 
 Although Shatrubodh implements a complete User and Entity Behaviour Analytics (UEBA) pipeline, its modular architecture provides a strong foundation for future research and enterprise-scale enhancement. Several extensions can further improve analytical capability, scalability, automation, and operational effectiveness while preserving the existing architectural principles.
 
----
-
 ## 16.1 Real-Time Event Processing
 
 The current implementation operates on behavioural data collected through a batch-processing workflow. Future versions can incorporate real-time event ingestion using message brokers and streaming frameworks to continuously update behavioural profiles and generate alerts with minimal latency.
@@ -1488,8 +1348,6 @@ Real-time processing would enable:
 - Near real-time anomaly detection.
 - Faster incident response.
 - Reduced detection latency.
-
----
 
 ## 16.2 Enterprise Log Integration
 
@@ -1509,8 +1367,6 @@ Potential integrations include:
 
 These integrations would significantly expand behavioural visibility across enterprise environments.
 
----
-
 ## 16.3 Advanced Machine Learning Models
 
 While Isolation Forest and Local Outlier Factor provide effective unsupervised anomaly detection, future research may evaluate additional behavioural modelling approaches.
@@ -1526,8 +1382,6 @@ Potential analytical techniques include:
 
 Comparative evaluation of these approaches may further improve detection accuracy under different operational conditions.
 
----
-
 ## 16.4 Adaptive Risk Assessment
 
 The current contextual Risk Engine applies predefined analytical rules to translate anomaly scores into operational risk.
@@ -1535,8 +1389,6 @@ The current contextual Risk Engine applies predefined analytical rules to transl
 Future implementations could introduce adaptive risk modelling capable of dynamically adjusting contextual weights based on organizational behaviour, historical investigations, analyst feedback, and evolving threat patterns.
 
 Such adaptive scoring would improve prioritization while maintaining analytical transparency.
-
----
 
 ## 16.5 Threat Intelligence Integration
 
@@ -1552,8 +1404,6 @@ Potential integrations include:
 
 This additional context would improve investigative capabilities beyond behavioural analytics alone.
 
----
-
 ## 16.6 REST API and Automation
 
 Providing a dedicated REST API would enable Shatrubodh to integrate with external security platforms and automated workflows.
@@ -1567,8 +1417,6 @@ Potential use cases include:
 - Programmatic behavioural queries.
 
 API-driven architecture would significantly improve interoperability within enterprise security ecosystems.
-
----
 
 ## 16.7 Scalable Deployment
 
@@ -1584,8 +1432,6 @@ Future enterprise deployments may migrate toward:
 
 These enhancements would support significantly larger organizational environments while preserving the existing analytical pipeline.
 
----
-
 ## 16.8 Analyst Experience
 
 Future improvements to the SOC Dashboard may include:
@@ -1598,8 +1444,6 @@ Future improvements to the SOC Dashboard may include:
 - Executive reporting dashboards.
 
 These enhancements would improve operational efficiency while reducing analyst workload.
-
----
 
 ## 16.9 Explainable Artificial Intelligence (XAI)
 
@@ -1615,8 +1459,6 @@ Potential capabilities include:
 
 Improved explainability would strengthen analyst trust and support more informed investigation decisions.
 
----
-
 ## 16.10 Research Opportunities
 
 The modular design of Shatrubodh enables future academic and industrial research across multiple cybersecurity domains, including:
@@ -1630,8 +1472,6 @@ The modular design of Shatrubodh enables future academic and industrial research
 - Security operations automation.
 
 These research directions provide opportunities for extending the platform while maintaining compatibility with its existing architecture.
-
----
 
 ## 16.11 Summary
 
